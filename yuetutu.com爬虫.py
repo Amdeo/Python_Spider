@@ -4,6 +4,29 @@ import threadpool
 import os
 
 
+def mkdir(path):
+    # function：新建文件夹
+    # path：str-从程序文件夹要要创建的目录路径（包含新建文件夹名）
+    # 去除首尾空格
+
+    path = path.strip()  # strip方法只要含有该字符就会去除
+    # 去除首尾\符号
+    path = path.rstrip('\\')
+    # 判断路径是否存在
+    isExists = os.path.exists(path)
+
+    # 根据需要是否显示当前程序运行文件夹
+    # print("当前程序所在位置为："+os.getcwd())
+
+    if not isExists:
+        os.makedirs(path)
+        print(path + '创建成功')
+        return True
+    else:
+        print(path + '目录已存在')
+        return False
+
+
 class novelSpider:
     def __init__(self, domian_url, url):
         """
@@ -60,7 +83,7 @@ class novelSpider:
         for chapter_info in chapter_info_list:
             chapter_url = self.domian_url + chapter_info[0]
             chapter_title = chapter_info[1]
-            print(chapter_url,chapter_title)
+            # print(chapter_url, chapter_title)
             chapterHtml = self.getnovelRequestText(chapter_url)
             context = re.findall(r'<div id="content">.*?</p>.*?<br/>(.*?)<p>.*?</div>', chapterHtml, re.S)
             if len(context) > 0:
@@ -89,12 +112,12 @@ class novelSpider:
         # 遍历说有小说
         for index, value in enumerate(self.NovelInfoList):
             # if index < 3:  # 这里先爬5部
-            if len(value) == 2:
+            if index < 1500 and len(value) == 2:
                 func_args.append(([self, value[0], value[1]], None))
 
         # func_args = [([],None)]
         # 使用线程池进行多线程进行爬虫
-        pool = threadpool.ThreadPool(100)
+        pool = threadpool.ThreadPool(50)
         requests = threadpool.makeRequests(novelSpider.threadFun, func_args)
         [pool.putRequest(req) for req in requests]
         pool.wait()
@@ -109,8 +132,11 @@ class novelSpider:
         # 小说路径
         nvoelPath = os.path.join(os.getcwd(), "novelDir")
 
+        if not os.path.exists(nvoelPath):
+            mkdir(nvoelPath)
+
         # 通过小说名创建一个文件
-        f = self.openFile(os.path.join(nvoelPath,novelName + ".txt"))  # 返回一个文件对象
+        f = self.openFile(os.path.join(nvoelPath, novelName + ".txt"))  # 返回一个文件对象
 
         # 获取一部小说的所有章节的url和名字
         chapter_info_list = self.getEveryChapterUrl(novelUrl)
