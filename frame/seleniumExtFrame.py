@@ -10,6 +10,7 @@ class ChromeDriver():
 
     def getbrower(self, display):
         if not display:
+            # 是否启动无头浏览器
             self.chrome_options.add_argument('--headless')
             self.chrome_options.add_argument('--disable-gpu')
         return webdriver.Chrome(executable_path=self.executable_path, chrome_options=self.chrome_options)
